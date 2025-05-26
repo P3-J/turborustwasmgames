@@ -1,13 +1,71 @@
-// This is where your main game loop code goes
-// The stuff in this block will run ~60x per sec
+
+
+#[derive(BorshSerialize, BorshDeserialize,PartialEq, Debug, Clone)] //Turbo structs need to derive these 5 traits to serialize properly
+struct Bird {
+    x: f32,
+    y: f32,
+    r: f32,
+    rot: f32,
+    jumping: bool,
+    start_y: f32,
+}
+
+impl Bird {
+    fn new() -> Self {
+        Self {
+            x: 128.0,
+            y: 22.0,
+            r: 16.0,
+            rot: 0.,
+            jumping: false,
+            start_y: 0.,
+        }
+    }
+
+    fn get_center(&self) -> (f32, f32) {
+        (self.x + self.r, self.y + self.r)
+    }
+
+    fn set_sprite(&self, name_of : &str) {
+        sprite!(name_of,
+        x = self.x - self.r,
+        y = self.y - 16.0,
+        rotation = self.rot,
+       );
+    }
+
+    fn apply_gravity(&mut self) {
+        self.y += 0.9;
+        self.apply_jump();
+    }
+
+    fn jump(&mut self, state: bool){
+        self.jumping = state;
+        self.start_y = self.y;
+    }
+
+    fn apply_jump(&mut self){
+        if !self.jumping {
+            return;
+        }
+
+        if (self.start_y - self.y > 30.){
+            self.jumping = false;
+        } else {
+            self.y -= 4.;
+        }
+        
+    }
+
+
+}
+
+
+
+
 turbo::init! {
     struct GameState {
         frame: u32,
-        last_munch_at: u32,
-        cat_x: f32,
-        cat_y: f32,
-        cat_r: f32,
-        cat_rot: f32,
         pancakes: Vec<struct Pancake {
             x: f32,
             y: f32,
@@ -15,83 +73,30 @@ turbo::init! {
             radius: f32,
         }>,
         score: u32,
+        birdy: Bird,
     } = Self {
         frame: 0,
-        last_munch_at: 0,
-        cat_x: 128.0,
-        cat_y: 112.0,
-        cat_r: 16.0,
-        cat_rot: 0.,
         pancakes: vec![],
         score: 0,
+        birdy: Bird::new(),
     }
+
 }
 
 turbo::go!({
     let mut state = GameState::load();
     state.frame += 1;
 
-    clear(0x00ffffff);
-    let frame = (state.frame as i32) / 10;
-    for col in 0..5 {
-        for row in 0..3 {
-            let x = ((col * 32 + frame) % 272);
-            let y = ((row * 32 + frame) % 144);
-            sprite!("heart", x = x, y = y);
-        }
-    }
-    
     state = check_movement(state);
 
-    let cat_center = (state.cat_x + state.cat_r, state.cat_y + state.cat_r);
+    let cat_center = state.birdy.get_center();
+    state.birdy.set_sprite("munch_cat");
+    state.birdy.apply_gravity();
 
 
     for pancake in &state.pancakes {
         circ!(x = pancake.x , y = pancake.y, d = pancake.radius, color = 0xdba470ff)
     }
-
-    sprite!("munch_cat",
-     x = state.cat_x - state.cat_r,
-     y = state.cat_y - 16.0,
-     rotation = state.cat_rot,
-    );
- 
-
-    if rand() % 64 == 0 {
-        let pk = Pancake {
-            x: (rand() % 256) as f32,
-            y: -15.0,
-            vel: 3.,
-            radius: 10.,
-        };
-        state.pancakes.push(pk);
-    }
-
-    
-
-    
-    text!("Score: {}", state.score; x = 10, y = 10, font = "large", color = 0xffffffff);
-    // draw
-    state.pancakes.retain_mut(|p| {
-        p.y += p.vel;
-
-
-        let dx = cat_center.0 - (p.x + p.radius);
-        let dy = cat_center.1 - (p.y + p.radius);
-
-        let distance = (dx * dx + dy * dy).sqrt();
-
-        let max_distance = state.cat_r + p.radius;
-        let radii_diff = (state.cat_r - p.radius).abs();
-
-        if radii_diff <= distance && distance <= max_distance {
-            state.score += 1;
-            return false
-        }
-        return true;
-    });
-
-
 
     state.save();
 });
@@ -99,10 +104,14 @@ turbo::go!({
 
 fn check_movement(mut state: GameState) -> GameState {
     if gamepad(0).left.pressed() {
-        state.cat_x -= 2.;
+        state.birdy.x -= 2.;
     }
     if gamepad(0).right.pressed() {
-        state.cat_x += 2.;
+        state.birdy.x += 2.;
+    }
+
+    if gamepad(0).start.pressed(){
+        state.birdy.jump(true);
     }
     return state;
 }
