@@ -16,7 +16,6 @@ turbo::init! {
         score: 0,
         birdy: Bird::new(),
     }
-
 }
 
 turbo::go!({
@@ -26,9 +25,11 @@ turbo::go!({
 
     state = check_movement(state);
 
-    if (state.pipes.len() <= 0) {
+    if (state.pipes.len() == 0){
         state = gen_pipe_pair(state);
-        state.score += 1;
+    }
+    if (state.pipes.len() <= 2 && state.pipes[0].x < 148.) {
+            state = gen_pipe_pair(state);
     }
 
     //log!("pipecount {:?}", state.pipes.len());
@@ -79,8 +80,10 @@ fn check_movement(mut state: GameState) -> GameState {
 
 fn gen_pipe_pair(mut state: GameState) -> GameState {
 
-    let top_pipe = Pipe::new(244., 0., 30., 40.);
-    let bot_pipe: Pipe = Pipe::new(244., 90., 30., 60.);
+    let n = 1 + (rand() % 45);
+
+    let top_pipe = Pipe::new(244., 0., 30., 30. + n as f32);
+    let bot_pipe: Pipe = Pipe::new(244., 80. + n as f32, 30., 60.);
 
     state.pipes.push(top_pipe);
     state.pipes.push(bot_pipe);

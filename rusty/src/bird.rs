@@ -31,7 +31,7 @@ impl Bird {
     }
 
     pub fn apply_gravity(&mut self) {
-        self.y += 0.9;
+        self.y += 1.5;
         self.apply_jump();
     }
 
@@ -42,10 +42,12 @@ impl Bird {
 
     fn apply_jump(&mut self){
         if !self.jumping {
+            self.rot = 15.;
             return;
         }
+        self.rot = -15.;
 
-        if self.start_y - self.y > 30.{
+        if self.start_y - self.y > 20.{
             self.jumping = false;
         } else {
             self.y -= 4.;
