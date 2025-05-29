@@ -19,27 +19,19 @@ turbo::init! {
 }
 
 turbo::go!({
-    clear(0xffff10ff);
+    clear(0x40d1c8ff);
     let mut state = GameState::load();
     state.frame += 1;
 
     state = check_movement(state);
-
-    if (state.pipes.len() == 0){
-        state = gen_pipe_pair(state);
-    }
-    if (state.pipes.len() <= 2 && state.pipes[0].x < 148.) {
-            state = gen_pipe_pair(state);
-    }
-
+    state = check_pipe_gen(state);
     //log!("pipecount {:?}", state.pipes.len());
 
     let mut colliding = false;
-
     state.pipes.retain_mut(|p| {
         if p.x > 0.{
             p.draw_self();
-            let is_col = p.check_for_col((state.birdy.x, state.birdy.y));
+            let is_col = p.check_for_col((state.birdy.x , state.birdy.y));
             if is_col {colliding = true;}
             return true
         }
@@ -49,7 +41,7 @@ turbo::go!({
     state.birdy.set_sprite("floppy");
     state.birdy.apply_gravity();
 
-    if (colliding || state.birdy.y > 144.) {
+    if (colliding || state.birdy.y > 144. || state.birdy.y < 0.) {
         state = GameState{
             frame: 0,
             pipes: vec![],
@@ -58,8 +50,8 @@ turbo::go!({
         }
     }
     rect! (
-        w = 1,
-        h = 1,
+        w = 3,
+        h = 3,
         x = state.birdy.x,
         y = state.birdy.y,
         color = 0x006400FF
@@ -71,7 +63,7 @@ turbo::go!({
 
 
 fn check_movement(mut state: GameState) -> GameState {
-    if gamepad(0).start.pressed(){
+    if gamepad(0).start.just_pressed(){
         state.birdy.jump(true);
     }
     return state;
@@ -88,5 +80,15 @@ fn gen_pipe_pair(mut state: GameState) -> GameState {
     state.pipes.push(top_pipe);
     state.pipes.push(bot_pipe);
 
+    return state;
+}
+
+fn check_pipe_gen(mut state: GameState) -> GameState {
+    if (state.pipes.len() == 0){
+        state = gen_pipe_pair(state);
+    }
+    if (state.pipes.len() <= 2 && state.pipes[0].x < 148.) {
+        state = gen_pipe_pair(state);
+    }
     return state;
 }

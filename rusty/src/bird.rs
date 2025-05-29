@@ -47,7 +47,7 @@ impl Bird {
         }
         self.rot = -15.;
 
-        if self.start_y - self.y > 20.{
+        if self.start_y - self.y > 25.{
             self.jumping = false;
         } else {
             self.y -= 4.;
