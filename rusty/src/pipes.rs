@@ -8,6 +8,7 @@ pub struct Pipe {
     pub w: f32,
     pub h: f32,
     pub rot: f32,
+    pub passed: bool,
 }
 
 impl Pipe {
@@ -19,6 +20,7 @@ impl Pipe {
             w: w,
             h: h,
             rot: 0.,
+            passed: false,
         }
     }
 
@@ -42,5 +44,9 @@ impl Pipe {
         };
         
         return false;
+    }
+
+    pub fn passed_pipe(&mut self){
+        self.passed = true;
     }
 }
