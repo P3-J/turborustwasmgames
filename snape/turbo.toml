@@ -1,0 +1,8 @@
+name = "snape"
+version = "0.1.0"
+description = "An awesome game made in Turbo!"
+authors = ["Anonymous"]
+
+[canvas]
+width = 9
+height = 9
