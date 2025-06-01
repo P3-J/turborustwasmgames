@@ -5,7 +5,6 @@ use turbo::prelude::*;
 
 pub struct Snape {
     head_pos: (i32, i32),
-    head_last_pos: (i32, i32),
     tail_last_pos: (i32, i32),
     body: Vec<(i32, i32)>,
 }
@@ -16,7 +15,6 @@ impl Snape {
         let h_pos: (i32, i32) = (h_pos.0, h_pos.1);
         Snape {
             head_pos: h_pos,
-            head_last_pos: (0, 0),
             tail_last_pos: (0, 0),
             body: vec![],
         }
@@ -28,6 +26,7 @@ impl Snape {
             y = self.head_pos.1,
             w = 1,
             h = 1,
+            color = 0xebff99ff,
         );
 
         for body in self.body.iter(){
@@ -41,13 +40,12 @@ impl Snape {
     }
 
     pub fn move_snape(&mut self, dir: (i32, i32)) -> bool {
-        self.head_last_pos = (self.head_pos.0, self.head_pos.1);
-        self.head_pos.0 = (self.head_pos.0 + dir.0 + 9) % 9;
-        self.head_pos.1 = (self.head_pos.1 + dir.1 + 9) % 9;
-
+        self.tail_last_pos = (self.head_pos.0, self.head_pos.1);
         if (self.body.len() > 0){
             self.move_body_parts();
-        }
+        } 
+        self.head_pos.0 = (self.head_pos.0 + dir.0 + 9) % 9;
+        self.head_pos.1 = (self.head_pos.1 + dir.1 + 9) % 9;
         
         // check for collision
         for body in self.body.iter(){
@@ -59,24 +57,16 @@ impl Snape {
     }
 
     pub fn increase_size(&mut self){
-        if (self.body.len() <= 0){
-            self.body.push(self.head_last_pos);
-        } else {
-            self.body.push(self.tail_last_pos);
-        }
+        self.body.push(self.tail_last_pos);
+        
     }
 
     fn move_body_parts(&mut self){
-        let mut last_pos = (0, 0);
-        for (pos, body) in self.body.iter_mut().enumerate() {
-            if pos == 0{
-                last_pos = (body.0, body.1);
-                *body = self.head_last_pos;
-            } else {
-                let my_pos = *body;
-                *body = last_pos;
-                last_pos = my_pos;
-            }
+        let mut last_pos: (i32, i32) = (self.head_pos.0, self.head_pos.1);
+        for body in self.body.iter_mut() {
+            let my_pos: (i32, i32) = *body;
+            *body = last_pos;
+             last_pos = (my_pos.0, my_pos.1);
         }
         self.tail_last_pos = self.body[0];
     }

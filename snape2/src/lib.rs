@@ -19,15 +19,17 @@ turbo::init! {
 
 turbo::go!({
     let mut state = GameState::load();
+    clear(0x1001fff);
     state.frame += 1;
     state = get_input(state);
 
     let mut restart = false;
+    
     state = generate_food(state);
-
-    if state.frame % 30 - state.frame_speed_buff == 0{
+    if state.frame % (30 - state.frame_speed_buff) == 0{
         restart = state.snape.move_snape(state.last_dir);
     }
+    
     state.snape.draw();
 
     if restart {
@@ -44,6 +46,7 @@ turbo::go!({
 });
 
 fn get_input(mut state: GameState) -> GameState {
+
     if gamepad(0).up.just_pressed() {
         state.last_dir = (0, -1);
     }
