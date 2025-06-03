@@ -393,6 +393,7 @@ FodyWeavers.xsd
 .rusty/target
 .rusty/www
 .snape2/t1
+.snape2/target
 
 # Windows Installer files from build outputs
 *.cab
