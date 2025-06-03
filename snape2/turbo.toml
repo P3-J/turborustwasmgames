@@ -1,6 +1,6 @@
 name = "snape2"
 version = "0.1.0"
-description = "An awesome game made in Turbo!"
+description = "snake clone"
 authors = ["Anonymous"]
 
 [canvas]

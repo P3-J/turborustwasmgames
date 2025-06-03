@@ -1,6 +1,6 @@
-name = "flapb"
+name = "rusty"
 version = "0.2.0"
-description = "yep"
+description = "flappybird clone"
 authors = ["p3"]
 
 [canvas]

@@ -5,14 +5,14 @@ turbo::init! {
     struct GameState {
         frame: u32,
         snape: Snape,
-        last_dir: (i32, i32),
+        dir: (i32, i32),
         food: (i32, i32),
         frame_speed_buff: u32,
     } = Self {
         frame: 0,
         snape: Snape::new((5,5)),
-        last_dir: (1, 0),
-        food: (-1, -1),
+        dir: (1, 0),
+        food: generate_random_board_pos(),
         frame_speed_buff: 0,
     }
 }
@@ -25,54 +25,52 @@ turbo::go!({
 
     let mut restart = false;
     
-    state = generate_food(state);
+    state = draw_and_check_food(state);
     if state.frame % (30 - state.frame_speed_buff) == 0{
-        restart = state.snape.move_snape(state.last_dir);
+        restart = state.snape.move_snape(state.dir);
     }
-    
     state.snape.draw();
 
     if restart {
-        state = GameState {
-            frame: 0,
-            snape: Snape::new((5,5)),
-            last_dir: (1, 0),
-            food: (-1, -1),
-            frame_speed_buff: 0,
-        }
+        state = restart_game();
     }
 
     state.save();
 });
 
+fn restart_game() -> GameState {
+    return GameState {
+        frame: 0,
+        snape: Snape::new((5,5)),
+        dir: (1, 0),
+        food: generate_random_board_pos(),
+        frame_speed_buff: 0,
+    }
+}
+
 fn get_input(mut state: GameState) -> GameState {
 
     if gamepad(0).up.just_pressed() {
-        state.last_dir = (0, -1);
+        state.dir = (0, -1);
     }
     if gamepad(0).down.just_pressed() {
-        state.last_dir = (0, 1);
+        state.dir = (0, 1);
     }
     if gamepad(0).left.just_pressed() {
-        state.last_dir = (-1, 0);
+        state.dir = (-1, 0);
     }
     if gamepad(0).right.just_pressed() {
-        state.last_dir = (1, 0);
+        state.dir = (1, 0);
     }
     return state;
 }
 
-fn generate_food(mut state: GameState) -> GameState {
 
-    if state.food.0 == -1{
-        let x: i32 = 0 + (rand() % 9) as i32;
-        let y: i32 = 0 + (rand() % 9) as i32;
-        state.food = (x, y);
-    }
+fn draw_and_check_food(mut state: GameState) -> GameState {
 
-    if (state.food == state.snape.get_head_pos()){
+    if state.food == state.snape.get_head_pos(){
         state.snape.increase_size();
-        state.food = (-1, -1);
+        state.food = generate_random_board_pos();
         state.frame_speed_buff += 1;
     }
 
@@ -84,4 +82,10 @@ fn generate_food(mut state: GameState) -> GameState {
             color = 0xeb4034ff,
     );
     return state;
+}
+
+fn generate_random_board_pos() -> (i32, i32) {
+    let x: i32 = 0 + (rand() % 9) as i32;
+    let y: i32 = 0 + (rand() % 9) as i32;
+    return (x, y)
 }

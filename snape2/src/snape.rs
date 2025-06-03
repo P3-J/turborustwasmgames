@@ -41,7 +41,7 @@ impl Snape {
 
     pub fn move_snape(&mut self, dir: (i32, i32)) -> bool {
         self.tail_last_pos = (self.head_pos.0, self.head_pos.1);
-        if (self.body.len() > 0){
+        if self.body.len() > 0{
             self.move_body_parts();
         } 
         self.head_pos.0 = (self.head_pos.0 + dir.0 + 9) % 9;

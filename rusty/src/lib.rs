@@ -25,12 +25,12 @@ turbo::go!({
 
     state = check_movement(state);
 
-    if (state.frame % 60 == 0){
+    if state.frame % 60 == 0{
         state = check_pipe_gen(state);
     }
     //log!("pipecount {:?}", state.pipes.len());
 
-    if (state.pipes.len() > 0 && state.pipes[0].x < 138. && !state.pipes[0].passed){
+    if state.pipes.len() > 0 && state.pipes[0].x < 138. && !state.pipes[0].passed{
         state.pipes[0].passed_pipe();
         state.score += 1;
     }
@@ -49,7 +49,7 @@ turbo::go!({
     state.birdy.set_sprite("floppy");
     state.birdy.apply_gravity();
 
-    if (colliding || state.birdy.y > 144. || state.birdy.y < 0.) {
+    if colliding || state.birdy.y > 144. || state.birdy.y < 0. {
         state = GameState{
             frame: 0,
             pipes: vec![],
@@ -94,10 +94,10 @@ fn gen_pipe_pair(mut state: GameState) -> GameState {
 fn check_pipe_gen(mut state: GameState) -> GameState {
 
     
-    if (state.pipes.len() == 0){
+    if state.pipes.len() == 0{
         state = gen_pipe_pair(state);
     }
-    if (state.pipes.len() <= 3 && state.pipes[0].x < 158.) {
+    if state.pipes.len() <= 3 && state.pipes[0].x < 158. {
         state = gen_pipe_pair(state);
     }
     return state;
