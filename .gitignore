@@ -389,11 +389,11 @@ FodyWeavers.xsd
 
 # Local History for Visual Studio Code
 .history/
-.snape2/target
-.rusty/target
-.rusty/www
-.snape2/t1
-.snape2/target
+snape2/target
+rusty/target
+rusty/www
+snape2/t1
+snape2/target
 
 # Windows Installer files from build outputs
 *.cab
