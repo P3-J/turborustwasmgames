@@ -394,7 +394,9 @@ rusty/target
 rusty/www
 snape2/t1
 snape2/target
-
+snape2/www
+sh00ter/target
+sh00ter/www
 # Windows Installer files from build outputs
 *.cab
 *.msi
