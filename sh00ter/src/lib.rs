@@ -18,7 +18,7 @@ turbo::go!({
     state.tpos.0 = 0;
 
     text!(
-        "Welcome to Max",
+        "",
         x = state.tpos.0,
         y = state.tpos.1,
     );
