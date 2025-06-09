@@ -4,5 +4,5 @@ description = "An awesome game made in Turbo!"
 authors = ["Anonymous"]
 
 [canvas]
-width = 80
-height = 77
+width = 160
+height = 140
