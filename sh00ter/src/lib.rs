@@ -28,19 +28,17 @@ turbo::go!({
         _init_start_up(&mut state);
     }
 
-    let craft_state = state.craft.get_state();
-
-
-    if gamepad(0).a.just_pressed() {
-        let bul = state.craft.shoot();
-        state.bullets.push(bul);
-    }
-
     state.bullets.retain_mut(|p| {
         p.draw_self();
+        let state = p.get_state();
+
+        if state.1 < 40{
+            return false;
+        }
         return true
     });
 
+    // enemy col and drawing
     state.enemies.retain_mut(|p| {
         p.draw_self();
         let mut colliding = false;
@@ -55,13 +53,11 @@ turbo::go!({
                 break
             }
         }
-
         return !colliding
     });
 
-    let dir = check_for_input();
-    state.craft.draw();
-    state.craft.move_dir(dir);
+    check_for_input(&mut state);
+    state.craft.state_action();
 
     state.save();
 
@@ -75,21 +71,25 @@ fn _init_start_up(state: &mut GameState) {
 }
 
 
-fn check_for_input() -> (i8, i8) {
+fn check_for_input(gm: &mut GameState) {
 
     if gamepad(0).left.pressed() {
-        return (-1, 0);
+        gm.craft.move_dir((-1, 0));
     }
     if gamepad(0).right.pressed(){
-        return (1, 0);
+        gm.craft.move_dir((1, 0));
     }
     if gamepad(0).up.pressed() {
-        return (0, -1);
+        gm.craft.move_dir((0, -1));
     }
     if gamepad(0).down.pressed(){
-        return (0, 1);
+        gm.craft.move_dir((0, 1));
     }
-    (0, 0)
+
+    if gamepad(0).a.just_pressed() {
+        let bul = gm.craft.shoot();
+        gm.bullets.push(bul);
+    }
 }
 
 fn check_if_colliding(

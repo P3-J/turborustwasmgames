@@ -24,6 +24,10 @@ impl Ev1 {
         }
     }
 
+    pub fn state_action(&mut self) {
+        self.draw();
+    }
+
     pub fn draw(&self) {
         sprite!(
             "ev1",
@@ -74,7 +78,7 @@ impl Ev1 {
     }
 
     pub fn shoot(&self) -> Bullet {
-        Bullet::new(self.x, self.y)
+        Bullet::new(self.x + 8, self.y + 10)
     }
 
 }

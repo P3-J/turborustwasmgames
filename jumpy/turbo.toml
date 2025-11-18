@@ -1,8 +1,8 @@
-name = "sh00ter"
+name = "jumpy"
 version = "0.1.0"
 description = "An awesome game made in Turbo!"
 authors = ["Anonymous"]
 
 [canvas]
-width = 140
-height = 140
+width = 256
+height = 144

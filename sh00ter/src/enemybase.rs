@@ -19,8 +19,8 @@ impl Enemy {
         Self {
             x: 20,
             y: 70,
-            w: 5,
-            h: 5,
+            w: 20,
+            h: 20,
             color: 0x301050ff,
         }
     }
