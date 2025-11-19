@@ -14,6 +14,10 @@ struct GameState {
     playercount: i32,
     selfcount: i32,
     selfplayer: Player,
+    firstjoin: bool,
+    handshakewaiting: bool,
+    event_start: u64,
+    selfid: String,
 }
 
 impl GameState {
@@ -24,8 +28,12 @@ impl GameState {
             players: vec![],
             blockers: vec![],
             playercount: 0,
-            selfcount: 0,
+            selfcount: 1,
             selfplayer: Player::new(),
+            handshakewaiting: true,
+            firstjoin: true,
+            selfid: "".to_string(),
+            event_start: time::now()
         }
     }
 
@@ -35,11 +43,17 @@ impl GameState {
 
         self.render_players();
 
+        if let Some(my_id) = turbo::os::client::user_id() {
+            self.selfid = my_id.clone();
+            self.add_player(my_id); // add self once authenticated
+            self.handshakewaiting = false;
+        }
+
         if let Some(conn) = PingPongChannel::subscribe("default") { 
             while let Ok(_msg) = conn.recv() { 
-                self.decode_pong(_msg);
+                self.decode_pong(_msg, &conn);
             } 
-
+            
             if gamepad::get(0).start.just_pressed() { 
                 self.check_movement(conn);
             } 
@@ -61,7 +75,7 @@ impl GameState {
                     actions: vec![]
                 };
 
-                sending.actions.push(Actions { action: actionTypes::jump, value: self.selfcount, text: "player jump".to_string()});
+                sending.actions.push(Actions { action: actionTypes::jump, value: self.selfcount, text: self.selfid.to_string()});
 
                 let _ = conn.send(&sending); 
             }
@@ -71,18 +85,19 @@ impl GameState {
 
     fn find_self(&mut self) -> Option<&mut Player> {
         for p in self.players.iter_mut(){
-            if p.name == self.selfcount {
+            if p.name == self.selfid {
                 return Some(p);
             }
         }
         None
     }
 
-    fn decode_pong(&mut self, _msg: Pong){
+    fn decode_pong(&mut self, _msg: Pong, conn: &ChannelConnection<Pong, Pong>){
         for actions in _msg.actions{
             match actions.action {
-                actionTypes::join => self.join_checks(actions),
+                actionTypes::join => self.join_checks(actions, conn),
                 actionTypes::jump => self.other_jump(actions),
+                actionTypes::handshake => self.handshake_do(actions),
                 _ => log!("uncovered")
             }
         }
@@ -95,25 +110,37 @@ impl GameState {
         }
 
         for p in self.players.iter_mut(){
-            if (p.name == act.value){
+            if (p.name == act.text){
                 p.jump(true);
             }
         }
     }
 
-    fn join_checks(&mut self, act: Actions){
-
-        // self boot
-        if self.selfcount == 0 {
-            self.selfcount = act.value + 1;
-        }
-
-        self.playercount = act.value;
+    fn add_player(&mut self, id: String){
+        
+        self.playercount += 1;
 
         let mut newPlayer = Player::new();
-        newPlayer.name = self.selfcount;
-
+        newPlayer.name = id;
         self.players.push(newPlayer);
+        
+        println!("added all");
+    }
+
+    fn join_checks(&mut self, act: Actions, conn: &ChannelConnection<Pong, Pong>){
+
+        // self boot
+        let mut sending= Pong {
+            actions: vec![]
+        };
+
+        sending.actions.push(Actions { action: actionTypes::handshake, value: self.selfcount, text: act.text});
+        let _ = conn.send(&sending);
+        
+    }
+
+    fn handshake_do(&mut self, act: Actions){
+        self.add_player(act.text);
     }
 
     fn render_players(&mut self){
@@ -149,6 +176,7 @@ enum actionTypes {
     log,
     jump,
     join,
+    handshake,
 }
  
 #[turbo::os::channel(program = "pingpong", name = "main")]
@@ -165,29 +193,25 @@ impl ChannelHandler for PingPongChannel {
         }
         
     } 
-    fn on_data(&mut self, user_id: &str, data: Self::Recv) -> Result<(), std::io::Error> { 
-        log!("Got {:?} from {:?}", data, user_id); 
-
-        let mut sending= Pong {
-            actions: vec![]
-        };
-        Self::send(user_id, sending)
-    } 
 
     fn on_connect(&mut self, user_id: &str) -> Result<(), std::io::Error> {
+
         let mut sending= Pong {
             actions: vec![]
         };
 
         sending.actions.push(
-            Actions { action: actionTypes::join, value: self.players.len() + 1 as i32, text: self.players.iter().count().to_string() + " players"}
+            Actions { action: actionTypes::join, value: self.players.len() as i32, text: user_id.to_string()}
         );
-
         Self::send(user_id, sending)
     }
 
 } 
 
+
+fn handshake_all_clients(cnl :PingPongChannel){
+    return;
+}
 
 /* 
 turbo::go!({

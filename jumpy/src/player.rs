@@ -6,7 +6,7 @@ pub struct Player {
     pub y: i8,
     w: u8,
     h: u8,
-    pub name: i32,
+    pub name: String,
 
     jumping: bool,
     jump_length: u8,
@@ -22,7 +22,7 @@ impl Player {
             y: 105,
             w: 10,
             h: 10,
-            name: 0,
+            name: "xd".to_string(),
             
             jumping: false,
             jump_length: 60,
