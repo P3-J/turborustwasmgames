@@ -1,10 +1,12 @@
 use turbo::*;
+
 #[turbo::serialize]
 pub struct Player {
     pub x: i8,
     pub y: i8,
     w: u8,
     h: u8,
+    pub name: i32,
 
     jumping: bool,
     jump_length: u8,
@@ -20,6 +22,7 @@ impl Player {
             y: 105,
             w: 10,
             h: 10,
+            name: 0,
             
             jumping: false,
             jump_length: 60,
@@ -28,13 +31,14 @@ impl Player {
     }
 
     pub fn draw_self(&mut self) {
+        let n = random::bool();
 
         rect! (
             x = self.x,
             y = self.y,
             w = self.w,
             h = self.h,
-            color = 0x006400FF
+            color = if n { 0x006400FF } else {0x001400FF}
         )
 
     }
