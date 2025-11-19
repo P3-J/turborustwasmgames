@@ -3,8 +3,11 @@ name = "jumpy"
 version = "0.1.0"
 edition = "2024"
 
+[package.metadata.turbo]
+user = "35b8eb1a-247d-4280-a3e6-f804a2bfd63c"
+
 [dependencies]
-turbo = { version = "^3.0.0", package = "turbo-genesis-sdk" }
+turbo = { version = "5.2.0", package = "turbo-genesis-sdk"}
 
 [lib]
 crate-type = ["cdylib"]

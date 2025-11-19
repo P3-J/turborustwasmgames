@@ -1,10 +1,5 @@
-use turbo::borsh::*;
-use turbo::prelude::*;
-
-#[derive(BorshSerialize, BorshDeserialize, PartialEq, Debug, Clone)]
-
-
-
+use turbo::*;
+#[turbo::serialize]
 pub struct Player {
     pub x: i8,
     pub y: i8,

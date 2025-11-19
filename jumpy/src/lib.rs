@@ -2,22 +2,80 @@ mod player;
 mod objects;
 use player::Player;
 use objects::Blocker;
+use turbo::{os::server::command::user_id, *};
 
-turbo::init!{
 
-    struct GameState {
-        frame: u32,
-        player: Player,
-        blockers: Vec<Blocker>,
-    } = Self {
-        frame: 0,
-        player: Player::new(),
-        blockers: vec![],
+
+#[turbo::game]
+struct GameState {
+    frame: u32,
+    player: Player,
+    blockers: Vec<Blocker>,
+}
+
+impl GameState {
+
+    pub fn new() -> Self {
+        Self{
+            frame: 0,
+            player: Player::new(),
+            blockers: vec![],
+        }
+    }
+
+    pub fn update(&mut self){
+        text!("Hello, world!!!");
+
+        if let Some(conn) = PingPongChannel::subscribe("default") { 
+            while let Ok(_msg) = conn.recv() { 
+                log!("Received pong from server!");
+            } 
+
+            if gamepad::get(0).start.just_pressed() { 
+                let _ = conn.send(&Ping); 
+                log!("Sent ping to the server!"); 
+            } 
+        } 
     }
 
 }
 
 
+#[turbo::serialize]
+pub struct Ping;
+ 
+#[turbo::serialize]
+pub struct Pong;
+ 
+#[turbo::os::channel(program = "pingpong", name = "main")]
+pub struct PingPongChannel{
+    players: Vec<String>,
+}
+
+impl ChannelHandler for PingPongChannel { 
+    type Recv = Ping; // incoming from client
+    type Send = String; // outgoing to client
+    fn new() -> Self { 
+        Self {
+            players: vec![],
+        }
+        
+    } 
+    fn on_data(&mut self, user_id: &str, data: Self::Recv) -> Result<(), std::io::Error> { 
+        log!("Got {:?} from {:?}", data, user_id); 
+        Self::send(user_id, "test".to_string());
+        Self::send(user_id, self.players.iter().count().to_string())
+    } 
+
+    fn on_connect(&mut self, _user_id: &str) -> Result<(), std::io::Error> {
+        self.players.push(_user_id.to_string());
+        Ok(())
+    }
+
+} 
+
+
+/* 
 turbo::go!({
     clear(0x40d1c8ff);
     let mut state = GameState::load();
@@ -53,9 +111,7 @@ turbo::go!({
     }
 
     state.save();
-});
-
-
+}); */
 
 fn draw_ground() {
     rect! (
@@ -68,7 +124,9 @@ fn draw_ground() {
 }
 
 fn check_movement(mut state: GameState) -> GameState {
-    if gamepad(0).start.just_pressed() || pointer().pressed(){
+    let gp = gamepad::get(0);
+
+    if gp.start.just_pressed(){
         state.player.jump(true);
     }
     return state;
@@ -84,5 +142,4 @@ fn gen_blocker(mut state: GameState) -> GameState {
     return state;
 
 }
-
 

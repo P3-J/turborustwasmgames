@@ -1,7 +1,6 @@
-use turbo::borsh::*;
-use turbo::prelude::*;
+use turbo::*;
+#[turbo::serialize]
 
-#[derive(BorshSerialize, BorshDeserialize, PartialEq, Debug, Clone)]
 pub struct Blocker {
     pub x: i8,
     pub y: i8,
@@ -41,4 +40,12 @@ impl Blocker {
         };
         return false;
     }
+}
+
+
+ 
+#[turbo::os::document(program = "counter")]
+pub struct Counter {
+    /// Current counter value
+    pub value: i32,
 }

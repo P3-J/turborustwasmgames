@@ -6,3 +6,6 @@ authors = ["Anonymous"]
 [canvas]
 width = 256
 height = 144
+
+[turbo-os]
+api-url = "https://os.turbo.computer"
