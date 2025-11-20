@@ -2,7 +2,7 @@ mod player;
 mod objects;
 use player::Player;
 use objects::Blocker;
-use turbo::{encoding::b64::url_safe::decode, os::client::channel::ChannelConnection, *};
+use turbo::{encoding::b64::url_safe::decode, os::{client::channel::ChannelConnection, server::channel::broadcast}, *};
 
 
 
@@ -44,9 +44,12 @@ impl GameState {
         self.render_players();
 
         if let Some(my_id) = turbo::os::client::user_id() {
-            self.selfid = my_id.clone();
-            self.add_player(my_id); // add self once authenticated
-            self.handshakewaiting = false;
+
+            if (self.handshakewaiting){
+                self.selfid = my_id.clone();
+                self.add_player(my_id); // add self once authenticated
+                self.handshakewaiting = false;
+            }
         }
 
         if let Some(conn) = PingPongChannel::subscribe("default") { 
@@ -123,8 +126,6 @@ impl GameState {
         let mut newPlayer = Player::new();
         newPlayer.name = id;
         self.players.push(newPlayer);
-        
-        println!("added all");
     }
 
     fn join_checks(&mut self, act: Actions, conn: &ChannelConnection<Pong, Pong>){
@@ -141,6 +142,8 @@ impl GameState {
 
     fn handshake_do(&mut self, act: Actions){
         self.add_player(act.text);
+
+        log!("got handshake from {}", self.selfid);
     }
 
     fn render_players(&mut self){
@@ -204,6 +207,13 @@ impl ChannelHandler for PingPongChannel {
             Actions { action: actionTypes::join, value: self.players.len() as i32, text: user_id.to_string()}
         );
         Self::send(user_id, sending)
+    }
+
+    fn on_data(&mut self, _user_id: &str, _data: Self::Recv) -> Result<(), std::io::Error> {
+       
+        let _= Self::broadcast(_data);
+        log!("got from {}", _user_id);
+        return Ok(());
     }
 
 } 
