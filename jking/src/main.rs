@@ -1,16 +1,24 @@
-use bevy::{color::palettes::basic::BLUE, prelude::*};
+use bevy::{
+    color::palettes::basic::BLUE,
+    input::keyboard::{Key, KeyboardInput},
+    prelude::*,
+};
 
 use bevy::window::{
     CursorGrabMode, CursorIcon, CursorOptions, PresentMode, SystemCursorIcon, WindowLevel,
     WindowTheme,
 };
 
-pub struct LaunchPlugin;
+use crate::food::{Food, FoodPlugin};
 
+mod food;
+
+pub struct LaunchPlugin;
 impl Plugin for LaunchPlugin {
     fn build(&self, app: &mut App) {
         app.add_systems(Startup, (add_people, spawn_triangle))
-            .insert_resource(GreetTimer(Timer::from_seconds(1., TimerMode::Once)))
+            .insert_resource(GreetTimer(Timer::from_seconds(0.1, TimerMode::Once)))
+            .add_systems(Update, move_player)
             .add_systems(Update, (rotate).chain());
     }
 }
@@ -19,7 +27,7 @@ fn main() {
     App::new()
         .add_plugins(DefaultPlugins.set(WindowPlugin {
             primary_window: Some(Window {
-                title: "I am a window!".into(),
+                title: "I am gaming!".into(),
                 name: Some("bevy.app".into()),
                 resolution: (500, 500).into(),
                 present_mode: PresentMode::AutoVsync,
@@ -36,6 +44,7 @@ fn main() {
             }),
             ..default()
         }))
+        .add_plugins(FoodPlugin)
         .add_plugins(LaunchPlugin)
         .run();
 }
@@ -51,11 +60,7 @@ fn spawn_triangle(
 ) {
     commands.spawn((Camera2d, Transform::default()));
 
-    let a = meshes.add(Triangle2d::new(
-        Vec2::new(250., 0.),
-        Vec2::new(5., 0.),
-        Vec2::new(2.5, -250.),
-    ));
+    let a = meshes.add(Rectangle::new(62.5, 62.5));
 
     commands.spawn((
         Mesh2d(a),
@@ -79,6 +84,25 @@ fn rotate(
 
     for mut trs in &mut query {
         &trs.rotate_z(0.5);
+    }
+}
+
+fn move_player(
+    time: Res<Time>,
+    mut query: Single<&mut Transform, (Without<Food>, With<Mesh2d>)>,
+    key: Res<ButtonInput<KeyCode>>,
+) {
+    if key.pressed(KeyCode::KeyA) {
+        query.translation.x -= 300.0 * time.delta_secs();
+    }
+    if key.pressed(KeyCode::KeyD) {
+        query.translation.x += 300.0 * time.delta_secs();
+    }
+    if key.pressed(KeyCode::KeyW) {
+        query.translation.y += 300.0 * time.delta_secs();
+    }
+    if key.pressed(KeyCode::KeyS) {
+        query.translation.y -= 300.0 * time.delta_secs();
     }
 }
 
