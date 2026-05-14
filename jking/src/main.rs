@@ -18,6 +18,7 @@ impl Plugin for LaunchPlugin {
     fn build(&self, app: &mut App) {
         app.add_systems(Startup, (add_people, spawn_triangle))
             .insert_resource(GreetTimer(Timer::from_seconds(0.1, TimerMode::Once)))
+            .insert_resource(WorldSize { x: 500.0, y: 500.0 })
             .add_systems(Update, move_player)
             .add_systems(Update, (rotate).chain());
     }
@@ -114,3 +115,9 @@ struct Name(String);
 
 #[derive(Resource)]
 struct GreetTimer(Timer);
+
+#[derive(Resource)]
+struct WorldSize {
+    x: f32,
+    y: f32,
+}
