@@ -9,14 +9,18 @@ use bevy::window::{
     WindowTheme,
 };
 
-use crate::food::{Food, FoodPlugin};
+use crate::{
+    food::{Food, FoodPlugin},
+    scoreboard::ScoreboardPlugin,
+};
 
 mod food;
+mod scoreboard;
 
 pub struct LaunchPlugin;
 impl Plugin for LaunchPlugin {
     fn build(&self, app: &mut App) {
-        app.add_systems(Startup, (add_people, spawn_triangle))
+        app.add_systems(Startup, spawn_triangle)
             .insert_resource(GreetTimer(Timer::from_seconds(0.1, TimerMode::Once)))
             .insert_resource(WorldSize { x: 500.0, y: 500.0 })
             .add_systems(Update, move_player)
@@ -47,11 +51,8 @@ fn main() {
         }))
         .add_plugins(FoodPlugin)
         .add_plugins(LaunchPlugin)
+        .add_plugins(ScoreboardPlugin)
         .run();
-}
-
-fn add_people(mut commands: Commands) {
-    commands.spawn((Person, Name("jk".to_string())));
 }
 
 fn spawn_triangle(
@@ -84,7 +85,7 @@ fn rotate(
     }
 
     for mut trs in &mut query {
-        &trs.rotate_z(0.5);
+        let _ = &trs.rotate_z(0.5);
     }
 }
 
@@ -106,12 +107,6 @@ fn move_player(
         query.translation.y -= 300.0 * time.delta_secs();
     }
 }
-
-#[derive(Component)]
-struct Person;
-
-#[derive(Component)]
-struct Name(String);
 
 #[derive(Resource)]
 struct GreetTimer(Timer);
